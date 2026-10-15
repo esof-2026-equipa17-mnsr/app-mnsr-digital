@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carrancas — Guia do Palácio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Petrona:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+
+    --marble:#E8E1CE; --marble-2:#DED4B9; --ink:#211D18; --stone:#C9BFA8;
+    --patina:#3F5D52; --patina-2:#345048; --gilt:#A97535; --gilt-2:#8E5F28; --wine:#6B2630;
+    --white:#FFFDF8;
+
+    --bg:var(--marble); --backdrop:#171410;
+    --surface:var(--white); --surface-2:var(--marble-2);
+    --text:var(--ink); --text-muted:#6E6350;
+    --border:var(--stone);
+    --accent:var(--patina); --accent-contrast:#FFFDF8;
+    --accent-2:var(--gilt); --accent-2-contrast:#FFFDF8;
+    --accent-3:var(--wine); --accent-3-contrast:#FFFDF8;
+
+    --font-display:'Petrona', Georgia, 'Times New Roman', serif;
+    --font-ui:'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17140F; --surface:#221E18; --surface-2:#2B261E;
+      --text:#ECE4D2; --text-muted:#AA9F87; --border:#3B352A;
+      --accent:#77A092; --accent-contrast:#12160f;
+      --accent-2:#D3A45C; --accent-2-contrast:#171208;
+      --accent-3:#C17681; --accent-3-contrast:#1c0f11;
+      --backdrop:#0C0A08;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17140F; --surface:#221E18; --surface-2:#2B261E;
+    --text:#ECE4D2; --text-muted:#AA9F87; --border:#3B352A;
+    --accent:#77A092; --accent-contrast:#12160f;
+    --accent-2:#D3A45C; --accent-2-contrast:#171208;
+    --accent-3:#C17681; --accent-3-contrast:#1c0f11;
+    --backdrop:#0C0A08;
+  }
+  html{ scroll-padding-top:env(safe-area-inset-top,0px); height:100%; }
+  *,*::before,*::after{ box-sizing:inherit; }
+  body{
+    height:100%; margin:0; background:var(--backdrop); color:var(--text);
+    font-family:var(--font-ui); -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.01ms !important; transition-duration:.01ms !important; }
+  }
+  button, input{ font-family:inherit; }
+  :focus-visible{ outline:2px solid var(--accent-2); outline-offset:2px; border-radius:4px; }
+
+  /* ---------- desktop backdrop ---------- */
+  .backdrop-pattern{
+    position:fixed; inset:0; z-index:0; background:var(--backdrop);
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(169,117,53,.10), transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(63,93,82,.14), transparent 45%);
+  }
+  .backdrop-pattern svg{ position:absolute; inset:0; width:100%; height:100%; opacity:.08; }
+
+  .stage{ position:relative; z-index:1; min-height:100%; display:flex; align-items:center; justify-content:center; padding:32px 16px; }
+
+  .app-shell{
+    position:relative; width:100%; max-width:412px; background:var(--bg);
+    display:flex; flex-direction:column; overflow:hidden; color:var(--text);
+  }
+  @media (min-width:481px){
+    .app-shell{ height:844px; border-radius:42px; box-shadow:0 40px 90px rgba(0,0,0,.45), 0 0 0 10px #100D0A; }
+    .stage{ padding:40px 16px; }
+  }
+  @media (max-width:480px){
+    .app-shell{ height:100%; }
+    .stage{ padding:0; }
+    .backdrop-pattern{ display:none; }
+  }
+
+  /* ---------- header ---------- */
+  .app-header{
+    flex:0 0 auto; display:flex; align-items:center; gap:10px; justify-content:space-between;
+    padding:calc(16px + env(safe-area-inset-top,0px)) 18px 14px;
+    background:var(--ink); color:var(--marble); position:relative; z-index:3;
+  }
+  :root[data-theme="dark"] .app-header, @media (prefers-color-scheme: dark){ }
+  .brand{ display:flex; align-items:center; gap:9px; }
+  .brand svg{ color:var(--gilt); flex:0 0 auto; }
+  .brand-name{ font-family:var(--font-display); font-size:19px; font-weight:600; letter-spacing:.2px; }
+  .live-pill{
+    display:flex; align-items:center; gap:6px; font-size:11.5px; color:#D9D2BE;
+    background:rgba(255,255,255,.08); padding:6px 10px; border-radius:100px; white-space:nowrap;
+  }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:#7FBFA6; flex:0 0 auto; }
+
+  /* ---------- main / views ---------- */
+  .app-main{ flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; position:relative; }
+  .view{ padding:20px 18px 28px; }
+  h1.view-title{ font-family:var(--font-display); font-size:26px; margin:0 0 4px; font-weight:600; }
+  p.view-sub{ margin:0 0 18px; color:var(--text-muted); font-size:14.5px; line-height:1.5; }
+
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; }
+  .section-label{ font-size:13px; color:var(--text-muted); margin:22px 0 10px; }
+  .section-label:first-child{ margin-top:0; }
+
+  /* home */
+  .hello{ font-family:var(--font-display); font-size:15px; color:var(--text-muted); margin:0 0 2px; }
+  .headline{ font-family:var(--font-display); font-size:27px; line-height:1.2; margin:0 0 16px; font-weight:600; }
+
+  .affluence-card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px 16px; margin-bottom:18px; }
+  .affluence-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+  .affluence-head strong{ font-family:var(--font-display); font-size:16px; font-weight:600; }
+  .affluence-tag{ font-size:11.5px; color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, transparent); padding:3px 9px; border-radius:100px; }
+  .room-row{ display:flex; align-items:center; gap:10px; margin:8px 0; }
+  .room-name{ width:118px; flex:0 0 auto; font-size:13px; color:var(--text-muted); }
+  .room-bar{ flex:1 1 auto; height:7px; border-radius:100px; background:var(--surface-2); overflow:hidden; }
+  .room-bar-fill{ height:100%; border-radius:100px; background:var(--patina); transition:width .6s ease; }
+  .room-pct{ width:34px; text-align:right; font-size:12px; color:var(--text-muted); flex:0 0 auto; }
+
+  .duration-row{ display:flex; gap:10px; margin-bottom:6px; }
+  .duration-chip{
+    flex:1; border:1px solid var(--border); background:var(--surface); color:var(--text);
+    border-radius:14px; padding:14px 8px; text-align:center; cursor:pointer;
+  }
+  .duration-chip strong{ display:block; font-family:var(--font-display); font-size:20px; }
+  .duration-chip span{ font-size:11.5px; color:var(--text-muted); }
+  .duration-chip:active{ transform:scale(.97); }
+
+  .about-block p{ font-size:13.5px; line-height:1.55; color:var(--text-muted); margin:0; }
+
+  .link-row{ display:flex; align-items:center; justify-content:space-between; margin-top:16px; color:var(--accent); font-size:14px; font-weight:600; cursor:pointer; }
+
+  /* routes */
+  .route-card{ background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:14px; }
+  .route-dur{ display:inline-block; font-size:12px; color:var(--accent-contrast); background:var(--accent); padding:4px 10px; border-radius:100px; margin-bottom:10px; }
+  .route-title{ font-family:var(--font-display); font-size:20px; font-weight:600; margin:0 0 6px; }
+  .route-desc{ font-size:13.5px; color:var(--text-muted); line-height:1.5; margin:0 0 12px; }
+  .route-meta{ font-size:12px; color:var(--text-muted); margin-bottom:14px; }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    border:none; border-radius:12px; padding:12px 16px; font-size:14.5px; font-weight:600;
+    cursor:pointer; width:100%;
+  }
+  .btn-primary{ background:var(--patina); color:var(--accent-contrast); }
+  .btn-ghost{ background:transparent; border:1px solid var(--border); color:var(--text); }
+  .btn:active{ transform:scale(.98); }
+  .btn-row{ display:flex; gap:8px; }
+  .btn-row .btn{ width:auto; flex:1; }
+  .btn-sm{ padding:9px 12px; font-size:13px; }
+
+  /* route detail */
+  .back-row{ display:flex; align-items:center; gap:6px; color:var(--text-muted); font-size:13.5px; margin-bottom:10px; cursor:pointer; width:fit-content; }
+  .progress-track{ height:6px; border-radius:100px; background:var(--surface-2); margin-bottom:18px; overflow:hidden; }
+  .progress-fill{ height:100%; background:var(--gilt); border-radius:100px; transition:width .5s ease; }
+  .stop{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px; margin-bottom:12px; }
+  .stop.visited{ border-color:var(--accent); }
+  .stop-top{ display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; }
+  .stop-check{
+    width:26px; height:26px; border-radius:50%; border:1.5px solid var(--border); flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center; color:var(--accent-contrast);
+  }
+  .stop.visited .stop-check{ background:var(--accent); border-color:var(--accent); }
+  .stop-room{ font-size:11.5px; text-transform:none; color:var(--accent); font-weight:600; }
+  .stop-name{ font-family:var(--font-display); font-size:17px; font-weight:600; margin:1px 0 2px; }
+  .stop-author{ font-size:12.5px; color:var(--text-muted); }
+  .stop-clue{ font-size:12.5px; color:var(--text-muted); font-style:italic; margin:0 0 10px; line-height:1.4; }
+
+  /* guide */
+  .profile-row{ display:flex; gap:8px; margin-bottom:14px; }
+  .profile-chip{ flex:1; text-align:center; padding:9px 6px; border-radius:100px; border:1px solid var(--border); background:var(--surface); font-size:12.5px; cursor:pointer; color:var(--text-muted); }
+  .profile-chip.active{ background:var(--ink); color:var(--marble); border-color:var(--ink); }
+  .piece-scroll{ display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:14px; }
+  .piece-chip{ flex:0 0 auto; padding:8px 13px; border-radius:100px; border:1px solid var(--border); background:var(--surface); font-size:12.5px; color:var(--text-muted); cursor:pointer; white-space:nowrap; }
+  .piece-chip.active{ background:var(--accent); color:var(--accent-contrast); border-color:var(--accent); }
+  .guide-context{ background:var(--surface-2); border-radius:14px; padding:12px 14px; margin-bottom:14px; font-size:12.5px; color:var(--text-muted); line-height:1.5; }
+  .guide-context strong{ color:var(--text); font-family:var(--font-display); font-size:14.5px; display:block; margin-bottom:2px; }
+  .chat-log{ display:flex; flex-direction:column; gap:10px; margin-bottom:14px; min-height:60px; }
+  .bubble{ max-width:86%; padding:10px 13px; border-radius:14px; font-size:13.5px; line-height:1.5; }
+  .bubble.user{ align-self:flex-end; background:var(--patina); color:var(--accent-contrast); border-bottom-right-radius:4px; }
+  .bubble.assistant{ align-self:flex-start; background:var(--surface); border:1px solid var(--border); border-bottom-left-radius:4px; }
+  .bubble.assistant.pending{ color:var(--text-muted); font-style:italic; }
+  .bubble.assistant.err{ border-color:var(--accent-3); color:var(--accent-3); }
+  .chat-empty{ font-size:13px; color:var(--text-muted); text-align:center; padding:14px 6px; }
+  .chat-form{ display:flex; gap:8px; position:sticky; bottom:0; background:var(--bg); padding-top:4px; }
+  .chat-input{ flex:1; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:100px; padding:11px 16px; font-size:13.5px; }
+  .chat-send{ width:42px; height:42px; border-radius:50%; border:none; background:var(--accent); color:var(--accent-contrast); flex:0 0 auto; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .chat-send:disabled{ opacity:.5; }
+  .chat-note{ font-size:11.5px; color:var(--text-muted); text-align:center; margin-top:10px; }
+  .stop-btn{ background:transparent; border:none; }
+
+  /* achievements */
+  .points-card{ background:var(--ink); color:var(--marble); border-radius:18px; padding:18px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; }
+  .points-num{ font-family:var(--font-display); font-size:34px; font-weight:600; color:var(--gilt); }
+  .points-label{ font-size:12.5px; color:#CFC6AE; }
+  .badge-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
+  .badge{ aspect-ratio:1; border-radius:16px; border:1px solid var(--border); background:var(--surface); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:6px; text-align:center; }
+  .badge.unlocked{ border-color:var(--gilt); background:color-mix(in srgb, var(--gilt) 10%, var(--surface)); }
+  .badge svg{ color:var(--text-muted); }
+  .badge.unlocked svg{ color:var(--gilt); }
+  .badge-label{ font-size:9.5px; color:var(--text-muted); line-height:1.2; }
+  .badge.unlocked .badge-label{ color:var(--text); }
+  .unlock-banner{ background:var(--surface-2); border:1px dashed var(--gilt); border-radius:14px; padding:13px 15px; font-size:13px; color:var(--text); line-height:1.5; margin-bottom:6px; }
+
+  /* nav */
+  .app-nav{
+    flex:0 0 auto; display:flex; justify-content:space-around; align-items:center;
+    background:var(--surface); border-top:1px solid var(--border);
+    padding:9px 8px calc(9px + env(safe-area-inset-bottom,0px)); position:relative; z-index:3;
+  }
+  .nav-btn{ background:none; border:none; display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--text-muted); font-size:10.5px; padding:4px 10px; cursor:pointer; }
+  .nav-btn.active{ color:var(--accent); }
+
+  /* modal */
+  .modal-layer{ position:absolute; inset:0; background:rgba(10,8,6,.55); display:flex; align-items:flex-end; z-index:10; }
+  @media (min-width:481px){ .modal-layer{ align-items:center; justify-content:center; } }
+  .modal{ background:var(--surface); width:100%; border-radius:20px 20px 0 0; padding:22px 20px calc(20px + env(safe-area-inset-bottom,0px)); max-height:86%; overflow-y:auto; }
+  @media (min-width:481px){ .modal{ border-radius:20px; max-width:340px; } }
+  .modal-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .modal-title{ font-family:var(--font-display); font-size:18px; font-weight:600; }
+  .modal-close{ background:none; border:none; color:var(--text-muted); cursor:pointer; padding:4px; }
+  .quiz-opt{ display:block; width:100%; text-align:left; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:12px; padding:12px 14px; margin-bottom:8px; font-size:13.5px; cursor:pointer; }
+  .quiz-opt.correct{ border-color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+  .quiz-opt.wrong{ border-color:var(--accent-3); background:color-mix(in srgb, var(--accent-3) 12%, var(--surface)); }
+  .quiz-feedback{ font-size:13px; color:var(--text-muted); line-height:1.5; margin:12px 0 16px; }
+  .quiz-result{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .quiz-result strong{ font-family:var(--font-display); font-size:19px; }
+
+  /* toast */
+  .toast-layer{ position:absolute; left:14px; right:14px; bottom:14px; display:flex; flex-direction:column; gap:8px; z-index:20; pointer-events:none; }
+  .toast{ background:var(--ink); color:var(--marble); font-size:12.5px; padding:11px 14px; border-radius:12px; box-shadow:0 10px 24px rgba(0,0,0,.3); animation:toast-in .25s ease; }
+  @keyframes toast-in{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:none; } }
+
+  .empty-state{ text-align:center; padding:40px 16px; color:var(--text-muted); font-size:13.5px; }
+</style>
+</head>
+<body>
+
+<div class="backdrop-pattern" aria-hidden="true">
+  <svg xmlns="http://www.w3.org/2000/svg"><defs>
+    <pattern id="carranca-tile" width="120" height="120" patternUnits="userSpaceOnUse">
+      <g transform="translate(36,36) scale(1.1)" fill="none" stroke="#A97535" stroke-width="1.4">
+        <path d="M24 5c8.5 0 14 6.8 14 14.4 0 2.7-.8 4.7-1.9 6.6 1.1 1.9 1.9 3.6 1.9 6C38 37.3 32 41 24 41S10 37.3 10 32c0-2.4.8-4.1 1.9-6C10.8 24.1 10 22.1 10 19.4 10 11.8 15.5 5 24 5Z"/>
+        <circle cx="17.5" cy="20" r="2.6"/><circle cx="30.5" cy="20" r="2.6"/>
+        <path d="M15 30c1.5 2 4.6 3.2 9 3.2s7.5-1.2 9-3.2"/>
+      </g>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#carranca-tile)"/>
+  </svg>
+</div>
+
+<div class="stage">
+  <main class="app-shell" id="app-shell">
+
+    <header class="app-header">
+      <div class="brand" id="brand-icon-slot"></div>
+      <div class="live-pill" id="live-pill"><span class="live-dot"></span><span id="live-pill-text">A carregar…</span></div>
+    </header>
+
+    <div class="app-main" id="app-main">
+      <div class="view" id="view-content"></div>
+    </div>
+
+    <nav class="app-nav" id="app-nav"></nav>
+
+    <div id="modal-root"></div>
+    <div class="toast-layer" id="toast-layer"></div>
+  </main>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ ICONS ============ */
+const ICONS = {
+  home: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10.5V20h5v-5h2v5h5v-9.5"/></svg>',
+  map: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 4 6v14l5-2 6 2 5-2V4l-5 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4V5Z"/></svg>',
+  medal: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8.5 7 3h3l2 3.5M15 8.5l2-5.5h-3l-2 3.5"/><circle cx="12" cy="14" r="6"/><circle cx="12" cy="14" r="2.2"/></svg>',
+  check: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 17 20 6"/></svg>',
+  qr: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h3v3h-3zM20 14v3M17 20h3"/></svg>',
+  send: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" stroke="none"><path d="M4 12 20 4 13 20l-2-7-7-1Z"/></svg>',
+  close: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5 19 19M19 5 5 19"/></svg>',
+  back: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
+  lock: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+};
+function carranca(size){
+  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+    + '<path d="M24 5c8.5 0 14 6.8 14 14.4 0 2.7-.8 4.7-1.9 6.6 1.1 1.9 1.9 3.6 1.9 6C38 37.3 32 41 24 41S10 37.3 10 32c0-2.4.8-4.1 1.9-6C10.8 24.1 10 22.1 10 19.4 10 11.8 15.5 5 24 5Z" stroke="currentColor" stroke-width="2"/>'
+    + '<path d="M6 16c-2.5 1-4 3.3-4 6M42 16c2.5 1 4 3.3 4 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+    + '<circle cx="17.5" cy="20" r="2.6" stroke="currentColor" stroke-width="2"/><circle cx="30.5" cy="20" r="2.6" stroke="currentColor" stroke-width="2"/>'
+    + '<path d="M13 14.5c1.6-1.6 3.6-2 5.2-1M35 14.5c-1.6-1.6-3.6-2-5.2-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+    + '<path d="M15 30c1.5 2 4.6 3.2 9 3.2s7.5-1.2 9-3.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+    + '<path d="M17.5 30.5 19 33l1.8-2M24 31l1.6 3 1.7-2.7M29.5 30.5 31 33l1.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    + '</svg>';
+}
+document.getElementById('brand-icon-slot').innerHTML = carranca(26) + '<span class="brand-name">Carrancas</span>';
+
+/* ============ DATA ============ */
+const SALAS = { escultura:'Galeria de Escultura', pintura:'Galeria de Pintura', decorativas:'Artes Decorativas', atrio:'Átrio da Cerca' };
+
+const ARTWORKS = [
+  { id:'desterrado', nome:'O Desterrado', autor:'António Soares dos Reis', ano:'1872', sala:'escultura', material:'Mármore de Carrara',
+    resumo:'Um jovem sentado, pensativo, sobre um rochedo batido pelo mar. Foi a prova final de Soares dos Reis na Academia de Roma e é considerada a obra maior da escultura portuguesa do século XIX.',
+    curiosidade:'A postura melancólica foi inspirada no poema "Tristezas do Desterro", de Alexandre Herculano, sobre a saudade de quem vive longe da pátria.',
+    dica:'Procure a figura solitária sentada sobre um rochedo, no centro da Galeria de Escultura.',
+    quiz:{ pergunta:'Que poeta inspirou a postura melancólica de "O Desterrado"?', opcoes:['Alexandre Herculano','Luís de Camões','Fernando Pessoa','Almeida Garrett'], resposta:0,
+      explicacao:'O poema "Tristezas do Desterro", de Alexandre Herculano, inspirou Soares dos Reis a esculpir esta figura de exílio e saudade.' } },
+  { id:'infancia-caim', nome:'Infância de Caim', autor:'António Teixeira Lopes', ano:'1890', sala:'escultura', material:'Mármore',
+    resumo:'Um grupo escultórico de grande delicadeza, da autoria de um dos escultores que deu continuidade ao legado de Soares dos Reis na viragem para o século XX.',
+    curiosidade:'Teixeira Lopes formou-se na Escola de Belas Artes do Porto, a mesma tradição de ensino de Soares dos Reis.',
+    dica:'Procure o grupo de figuras infantis em mármore, perto das obras de Soares dos Reis.',
+    quiz:{ pergunta:'Quem esculpiu "Infância de Caim"?', opcoes:['António Teixeira Lopes','António Soares dos Reis','Diogo de Macedo','Augusto Santo'], resposta:0,
+      explicacao:'A obra é de António Teixeira Lopes, escultor que deu continuidade à escola de escultura portuense.' } },
+  { id:'flor-agreste', nome:'Flor Agreste', autor:'António Soares dos Reis', ano:null, sala:'escultura', material:'Mármore',
+    resumo:'Outra peça marcante do escultor patrono do museu, exposta junto de "O Desterrado" nas salas dedicadas à sua obra.',
+    curiosidade:'Soares dos Reis é o patrono do museu: as suas obras ocupam um lugar central na coleção de escultura.',
+    dica:'Procure esta obra na mesma sala de "O Desterrado".',
+    quiz:{ pergunta:'Qual destas obras é também de Soares dos Reis?', opcoes:['Flor Agreste','Ismael','Cabeça de Rapaz','Infância de Caim'], resposta:0,
+      explicacao:'"Flor Agreste" é outra obra de Soares dos Reis, o patrono do museu.' } },
+  { id:'ismael', nome:'Ismael', autor:'Augusto Santo', ano:'1889', sala:'escultura', material:'Mármore',
+    resumo:'Uma escultura de finais do século XIX que acompanha, na mesma galeria, a obra de Soares dos Reis e Teixeira Lopes.',
+    curiosidade:'Foi criada no período em que a escola de escultura portuense atingia o seu auge, no final do século XIX.',
+    dica:'Procure esta figura na Galeria de Escultura, junto às restantes obras do período.',
+    quiz:{ pergunta:'Em que ano foi criada a escultura "Ismael"?', opcoes:['1889','1872','1927','1940'], resposta:0,
+      explicacao:'"Ismael", de Augusto Santo, data de 1889.' } },
+  { id:'cabeca-rapaz', nome:'Cabeça de Rapaz', autor:'Diogo de Macedo', ano:'1927', sala:'escultura', material:'Bronze',
+    resumo:'Uma obra do século XX que mostra a evolução da escultura portuguesa para linhas mais modernas, já depois da geração de Soares dos Reis.',
+    curiosidade:'Ao contrário da maioria das obras desta galeria, esta peça é em bronze e não em mármore.',
+    dica:'Procure a cabeça em bronze desta sala — repare no tom escuro do material.',
+    quiz:{ pergunta:'Em que material foi feita a "Cabeça de Rapaz"?', opcoes:['Bronze','Mármore','Madeira','Terracota'], resposta:0,
+      explicacao:'É uma das poucas obras da galeria feitas em bronze, e não em mármore.' } },
+  { id:'senhora-preto', nome:'Senhora Vestida de Preto', autor:'Henrique Pousão', ano:null, sala:'pintura', material:'Pintura a óleo',
+    resumo:'Um retrato de grande efeito de claro-escuro, de um dos pintores portugueses mais originais do século XIX, morto muito jovem.',
+    curiosidade:'Henrique Pousão estudou em Itália e é hoje visto como um dos precursores do modernismo na pintura portuguesa.',
+    dica:'Procure o retrato de tons escuros e contraste marcado, na Galeria de Pintura.',
+    quiz:{ pergunta:'Que efeito de luz caracteriza "Senhora Vestida de Preto"?', opcoes:['Claro-escuro','Pontilhismo','Cor plana','Aguarela translúcida'], resposta:0,
+      explicacao:'A obra destaca-se pelo contraste marcado entre luz e sombra, o chamado claro-escuro.' } },
+  { id:'fuga-margarida', nome:'Fuga de Margarida de Anjou', autor:'Francisco Vieira Portuense', ano:null, sala:'pintura', material:'Pintura a óleo',
+    resumo:'Uma cena de grande dramatismo, um dos pontos altos da coleção de pintura portuguesa do museu.',
+    curiosidade:'Francisco Vieira ficou conhecido como "Vieira Portuense" para se distinguir de outros pintores com o mesmo apelido.',
+    dica:'Procure a cena dramática, com figuras em movimento, na Galeria de Pintura.',
+    quiz:{ pergunta:'Como ficou conhecido o pintor Francisco Vieira, autor desta obra?', opcoes:['Vieira Portuense','Vieira Lusitano','Vieira do Porto','Vieira Real'], resposta:0,
+      explicacao:'Ficou conhecido como "Vieira Portuense", para se distinguir de outros pintores de apelido Vieira.' } },
+  { id:'biombos-namban', nome:'Biombos Namban', autor:'Anónimo (Japão, séc. XVII)', ano:'séc. XVII', sala:'decorativas', material:'Biombo pintado',
+    resumo:'Painéis dobráveis japoneses que retratam a chegada dos portugueses ao Japão — um testemunho raro do primeiro encontro entre as duas culturas.',
+    curiosidade:'"Namban" significa "bárbaros do sul", o nome que os japoneses davam aos primeiros europeus, vindos de sul.',
+    dica:'Procure os grandes painéis dobráveis pintados, na sala de Artes Decorativas.',
+    quiz:{ pergunta:'O que retratam os Biombos Namban?', opcoes:['A chegada dos portugueses ao Japão','Uma batalha naval portuguesa','A corte imperial chinesa','Cenas de caça europeias'], resposta:0,
+      explicacao:'Os biombos namban retratam a chegada dos portugueses ao Japão, entre os séculos XVI e XVII.' } },
+];
+const byId = id => ARTWORKS.find(a => a.id === id);
+
+const ROTEIROS = [
+  { id:'escultura30', duracao:30, titulo:'Obras-primas da Escultura', descricao:'Um mergulho rápido pela galeria de escultura, dos mestres do século XIX ao bronze modernista.', stops:['desterrado','infancia-caim','flor-agreste','cabeca-rapaz'] },
+  { id:'misterios60', duracao:60, titulo:'Mistérios do Palácio', descricao:'Escultura e pintura lado a lado, pelas salas mais emblemáticas do Palácio dos Carrancas.', stops:['desterrado','senhora-preto','fuga-margarida','ismael','infancia-caim','cabeca-rapaz'] },
+  { id:'completo90', duracao:90, titulo:'Do Mármore à Porcelana', descricao:'O percurso completo: escultura, pintura e artes decorativas, piso a piso.', stops:['desterrado','infancia-caim','flor-agreste','ismael','cabeca-rapaz','senhora-preto','fuga-margarida','biombos-namban'] },
+];
+
+const PERFIS = {
+  crianca:{ label:'Criança', texto:'A pessoa tem entre 6 e 11 anos. Usa frases curtas, tom divertido e simples, evita datas e termos técnicos.' },
+  jovem:{ label:'Jovem', texto:'A pessoa é jovem ou estudante. Usa um tom próximo e envolvente, podes fazer comparações atuais.' },
+  adulto:{ label:'Adulto', texto:'A pessoa é um visitante adulto. Podes ser mais detalhado(a) e usar vocabulário técnico com moderação.' },
+};
+
+/* ============ STATE ============ */
+const STORAGE_KEY = 'carrancas-mnsr-state-v1';
+let state = { view:'home', activeRouteId:null, activePieceId:null, profile:'jovem', visited:[], badges:[], points:0 };
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    state.profile = saved.profile || state.profile;
+    state.visited = Array.isArray(saved.visited) ? saved.visited : [];
+    state.badges = Array.isArray(saved.badges) ? saved.badges : [];
+    state.points = typeof saved.points === 'number' ? saved.points : 0;
+  }catch(e){ /* start fresh */ }
+}
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile:state.profile, visited:state.visited, badges:state.badges, points:state.points }));
+  }catch(e){ /* storage unavailable, continue in-memory */ }
+}
+loadState();
+
+/* ============ AFFLUENCE SIMULATION ============ */
+let affluence = { escultura:52, pintura:64, decorativas:34, atrio:22 };
+function stepAffluence(){
+  Object.keys(affluence).forEach(k=>{
+    const delta = Math.round((Math.random()-0.5) * 22);
+    affluence[k] = Math.min(94, Math.max(6, affluence[k] + delta));
+  });
+  const quietest = Object.keys(affluence).sort((a,b)=>affluence[a]-affluence[b])[0];
+  document.getElementById('live-pill-text').textContent = SALAS[quietest] + ' tranquila';
+  if(affluence[quietest] < 22 && quietest !== lastNotified){
+    lastNotified = quietest;
+    pushToast('🔔 ' + SALAS[quietest] + ' está tranquila agora — boa altura para visitar.');
+  }
+  if(state.view === 'home') renderView();
+}
+let lastNotified = null;
+stepAffluence();
+setInterval(stepAffluence, 7000);
+
+/* ============ TOASTS ============ */
+function pushToast(msg){
+  const layer = document.getElementById('toast-layer');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  layer.appendChild(el);
+  setTimeout(()=>{ el.remove(); }, 4200);
+}
+
+/* ============ SAMPLE (AI Guide) CAPABILITY ============ */
+let sample = null;
+let sampleState = 'loading'; // loading | ready | unavailable | denied
+(async function initSample(){
+  try{
+    if(window.claude && typeof window.claude.use === 'function'){
+      sample = await window.claude.use('sample');
+    }
+  }catch(e){ sample = null; }
+  sampleState = sample ? 'ready' : 'unavailable';
+  if(state.view === 'guide') renderView();
+})();
+
+const chatState = {}; // pieceId|'geral' -> [{role, content}]
+let currentAbort = null;
+
+function buildRules(piece){
+  const perfil = PERFIS[state.profile].texto;
+  const pieceTexto = piece
+    ? 'Obra em foco: "' + piece.nome + '", de ' + piece.autor + (piece.ano ? ' (' + piece.ano + ')' : '') + ', ' + SALAS[piece.sala] + '. ' + piece.resumo
+    : 'Não há nenhuma obra selecionada: responde a perguntas gerais sobre o Museu Nacional Soares dos Reis, instalado no Palácio dos Carrancas, no Porto, o museu público de arte mais antigo de Portugal (fundado em 1833).';
+  return 'És o Guia IA do Museu Nacional Soares dos Reis (MNSR), dentro de uma aplicação para visitantes. Responde sempre em português europeu, em no máximo 90 palavras, com um tom acolhedor e rigoroso. ' + perfil + '\n\n' + pieceTexto + '\n\nSe não souberes algo com certeza, di-lo com honestidade em vez de inventar.';
+}
+
+async function sendGuideQuestion(question){
+  const key = state.activePieceId || 'geral';
+  if(!chatState[key]) chatState[key] = [];
+  const turns = chatState[key];
+  turns.push({ role:'user', content: question });
+  turns.push({ role:'assistant', content:'', pending:true }); // placeholder
+  renderView();
+
+  const rules = buildRules(state.activePieceId ? byId(state.activePieceId) : null);
+  const ctl = new AbortController();
+  currentAbort = ctl;
+  const history = turns.slice(0, -1); // conversation so far, excluding the placeholder
+
+  try{
+    const { text } = await sample([{ role:'user', content: rules }, ...history], {
+      signal: ctl.signal,
+      cache: false,
+      modelTier: 'quick',
+      onText: ({ text }) => { turns[turns.length-1].content = text; turns[turns.length-1].pending = true; renderChatOnly(); }
+    });
+    turns[turns.length-1].content = text;
+    turns[turns.length-1].pending = false;
+  }catch(e){
+    const code = e && e.code;
+    const last = turns[turns.length-1];
+    if(code === 'cancelled'){
+      if(last && last.role==='assistant' && !last.content) turns.pop();
+      else if(last) last.pending = false;
+    } else if(e && e.text){
+      // keep whatever had already streamed before the failure
+      last.content = e.text;
+      last.pending = false;
+    } else {
+      turns.pop();
+      if(code === 'not_granted'){
+        sampleState = 'denied';
+      } else {
+        let msg = 'Não foi possível obter resposta agora. Tente novamente.';
+        if(code === 'rate_limited') msg = 'Muitos pedidos em simultâneo — tente novamente dentro de instantes.';
+        else if(code === 'refused') msg = 'O Guia IA não conseguiu responder a este pedido. Tente reformular a pergunta.';
+        turns.push({ role:'assistant', content: msg, isError:true });
+      }
+    }
+  }
+  renderView();
+}
+
+/* ============ RENDER: SHELL ============ */
+const NAV_ITEMS = [
+  { id:'home', label:'Início', icon:'home' },
+  { id:'routes', label:'Roteiros', icon:'map' },
+  { id:'guide', label:'Guia IA', icon:'chat' },
+  { id:'achievements', label:'Conquistas', icon:'medal' },
+];
+function renderNav(){
+  const nav = document.getElementById('app-nav');
+  nav.innerHTML = NAV_ITEMS.map(item=>{
+    const active = (state.view === item.id) || (item.id==='routes' && state.view==='route-detail');
+    return '<button class="nav-btn'+(active?' active':'')+'" data-nav="'+item.id+'">'+ICONS[item.icon]+'<span>'+item.label+'</span></button>';
+  }).join('');
+  nav.querySelectorAll('[data-nav]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      state.view = btn.getAttribute('data-nav');
+      renderView(); renderNav();
+    });
+  });
+}
+
+/* ============ RENDER: VIEWS ============ */
+function renderView(){
+  const el = document.getElementById('view-content');
+  if(state.view === 'home') el.innerHTML = viewHome();
+  else if(state.view === 'routes') el.innerHTML = viewRoutes();
+  else if(state.view === 'route-detail') el.innerHTML = viewRouteDetail();
+  else if(state.view === 'guide') el.innerHTML = viewGuide();
+  else if(state.view === 'achievements') el.innerHTML = viewAchievements();
+  bindViewActions();
+  renderNav();
+}
+
+function viewHome(){
+  const quietest = Object.keys(affluence).sort((a,b)=>affluence[a]-affluence[b])[0];
+  return ''
+  + '<p class="hello">Bem-vindo(a) ao</p>'
+  + '<h1 class="headline">Palácio dos Carrancas</h1>'
+  + '<div class="affluence-card">'
+    + '<div class="affluence-head"><strong>Agora no museu</strong><span class="affluence-tag">'+SALAS[quietest]+' mais tranquila</span></div>'
+    + Object.keys(SALAS).map(id=>'<div class="room-row"><span class="room-name">'+SALAS[id]+'</span><div class="room-bar"><div class="room-bar-fill" style="width:'+affluence[id]+'%"></div></div><span class="room-pct">'+affluence[id]+'%</span></div>').join('')
+  + '</div>'
+  + '<div class="section-label">Comece o seu percurso</div>'
+  + '<div class="duration-row">'
+    + ROTEIROS.map(r=>'<div class="duration-chip" data-action="quick-duration" data-duration="'+r.duracao+'"><strong>'+r.duracao+'</strong><span>min</span></div>').join('')
+  + '</div>'
+  + '<div class="link-row" data-action="go-routes-tab"><span>Ver todos os roteiros</span>'+ICONS.back.replace('stroke-width="2"','stroke-width="2" style="transform:rotate(180deg)"')+'</div>'
+  + '<div class="section-label">Sobre o museu</div>'
+  + '<div class="card about-block"><p>Fundado em 1833, o Museu Nacional Soares dos Reis é o museu público de arte mais antigo de Portugal. Instalado desde 1940 no Palácio dos Carrancas, reúne coleções de escultura, pintura e artes decorativas dos séculos XVI a XX.</p></div>';
+}
+
+function viewRoutes(){
+  return ''
+  + '<h1 class="view-title">Roteiros</h1>'
+  + '<p class="view-sub">Escolha um percurso consoante o tempo que tem disponível.</p>'
+  + ROTEIROS.map(r=>''
+    + '<div class="route-card">'
+      + '<span class="route-dur">'+r.duracao+' min</span>'
+      + '<h2 class="route-title">'+r.titulo+'</h2>'
+      + '<p class="route-desc">'+r.descricao+'</p>'
+      + '<p class="route-meta">'+r.stops.length+' paragens</p>'
+      + '<button class="btn btn-primary" data-action="go-route" data-route-id="'+r.id+'">Começar percurso</button>'
+    + '</div>'
+  ).join('');
+}
+
+function viewRouteDetail(){
+  const route = ROTEIROS.find(r=>r.id===state.activeRouteId) || ROTEIROS[0];
+  const total = route.stops.length;
+  const done = route.stops.filter(id=>state.visited.includes(id)).length;
+  return ''
+  + '<div class="back-row" data-action="go-routes-tab">'+ICONS.back+'<span>Roteiros</span></div>'
+  + '<h1 class="view-title">'+route.titulo+'</h1>'
+  + '<p class="view-sub">'+done+' de '+total+' paragens concluídas</p>'
+  + '<div class="progress-track"><div class="progress-fill" style="width:'+Math.round(done/total*100)+'%"></div></div>'
+  + route.stops.map(id=>{
+      const p = byId(id);
+      const visited = state.visited.includes(id);
+      return ''
+      + '<div class="stop'+(visited?' visited':'')+'">'
+        + '<div class="stop-top">'
+          + '<div class="stop-check">'+(visited?ICONS.check:'')+'</div>'
+          + '<div><div class="stop-room">'+SALAS[p.sala]+'</div><div class="stop-name">'+p.nome+'</div><div class="stop-author">'+p.autor+(p.ano?' · '+p.ano:'')+'</div></div>'
+        + '</div>'
+        + '<p class="stop-clue">"'+p.dica+'"</p>'
+        + '<div class="btn-row">'
+          + '<button class="btn btn-ghost btn-sm" data-action="scan-qr" data-piece-id="'+p.id+'">'+ICONS.qr+' Ler pista</button>'
+          + '<button class="btn btn-ghost btn-sm" data-action="ask-about" data-piece-id="'+p.id+'">'+ICONS.chat+' Perguntar ao guia</button>'
+        + '</div>'
+      + '</div>';
+    }).join('');
+}
+
+function viewGuide(){
+  const piece = state.activePieceId ? byId(state.activePieceId) : null;
+  const key = state.activePieceId || 'geral';
+  const turns = chatState[key] || [];
+  let bodyHtml = '';
+
+  if(sampleState === 'unavailable'){
+    bodyHtml = '<div class="chat-empty">O Guia IA não está disponível nesta visualização do protótipo.</div>';
+  } else if(sampleState === 'denied'){
+    bodyHtml = '<div class="chat-empty">Este protótipo não tem autorização para usar o Guia IA nesta sessão.</div>';
+  } else {
+    bodyHtml = ''
+      + '<div class="section-label">Adaptar respostas a</div>'
+      + '<div class="profile-row">' + Object.keys(PERFIS).map(k=>'<div class="profile-chip'+(state.profile===k?' active':'')+'" data-action="set-profile" data-profile="'+k+'">'+PERFIS[k].label+'</div>').join('') + '</div>'
+      + '<div class="section-label">Sobre qual obra?</div>'
+      + '<div class="piece-scroll">'
+        + '<div class="piece-chip'+(!piece?' active':'')+'" data-action="select-piece" data-piece-id="">Museu em geral</div>'
+        + ARTWORKS.map(a=>'<div class="piece-chip'+(state.activePieceId===a.id?' active':'')+'" data-action="select-piece" data-piece-id="'+a.id+'">'+a.nome+'</div>').join('')
+      + '</div>'
+      + (piece ? '<div class="guide-context"><strong>'+piece.nome+'</strong>'+piece.autor+(piece.ano?' · '+piece.ano:'')+' · '+SALAS[piece.sala]+'</div>' : '')
+      + '<div class="chat-log" id="chat-log">'
+        + (turns.length ? turns.map(t=>{
+            const cls = t.role==='user' ? 'user' : ('assistant' + (t.pending?' pending':'') + (t.isError?' err':''));
+            const text = t.role==='assistant' && t.pending && !t.content ? 'A pensar…' : (t.content || 'A pensar…');
+            return '<div class="bubble '+cls+'">'+escapeHtml(text)+'</div>';
+          }).join('') : '<div class="chat-empty">Pergunte algo sobre '+(piece?('"'+piece.nome+'"'):'o museu')+' — por exemplo, "quando foi feita esta obra?".</div>')
+      + '</div>'
+      + '<form class="chat-form" id="chat-form">'
+        + '<input class="chat-input" id="chat-input" type="text" placeholder="Escreva a sua pergunta…" autocomplete="off">'
+        + '<button class="chat-send" type="submit" id="chat-send">'+ICONS.send+'</button>'
+      + '</form>'
+      + '<p class="chat-note">As respostas são geradas por IA e podem conter imprecisões.</p>';
+  }
+
+  return '<h1 class="view-title">Guia IA</h1><p class="view-sub">O assistente virtual do museu, adaptado a si.</p>' + bodyHtml;
+}
+
+function renderChatOnly(){
+  const log = document.getElementById('chat-log');
+  if(!log) return;
+  const key = state.activePieceId || 'geral';
+  const turns = chatState[key] || [];
+  log.innerHTML = turns.map(t=>{
+    const cls = t.role==='user' ? 'user' : ('assistant' + (t.pending?' pending':'') + (t.isError?' err':''));
+    const text = t.role==='assistant' && t.pending && !t.content ? 'A pensar…' : (t.content || 'A pensar…');
+    return '<div class="bubble '+cls+'">'+escapeHtml(text)+'</div>';
+  }).join('');
+  log.scrollTop = log.scrollHeight;
+}
+
+function viewAchievements(){
+  return ''
+  + '<h1 class="view-title">Conquistas</h1>'
+  + '<p class="view-sub">Descubra peças e desbloqueie medalhas digitais.</p>'
+  + '<div class="points-card"><div><div class="points-num">'+state.points+'</div><div class="points-label">pontos acumulados</div></div>'+carranca(46).replace('width="46" height="46"','width="46" height="46" style="color:#A97535"')+'</div>'
+  + '<div class="section-label">Medalhas ('+state.badges.length+'/'+ARTWORKS.length+')</div>'
+  + '<div class="badge-grid">' + ARTWORKS.map(a=>{
+      const unlocked = state.badges.includes(a.id);
+      return '<div class="badge'+(unlocked?' unlocked':'')+'">'+(unlocked?carranca(26):ICONS.lock)+'<span class="badge-label">'+a.nome+'</span></div>';
+    }).join('') + '</div>'
+  + (state.badges.length >= 4
+      ? '<div class="unlock-banner">🎉 Desconto de 10% desbloqueado na loja do museu — mostre este ecrã na loja.</div>'
+      : '<div class="unlock-banner">Desbloqueie 4 medalhas para ganhar 10% de desconto na loja do museu. Faltam '+Math.max(0,4-state.badges.length)+'.</div>');
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ============ ACTIONS ============ */
+function bindViewActions(){
+  const root = document.getElementById('view-content');
+  root.querySelectorAll('[data-action]').forEach(node=>{
+    const action = node.getAttribute('data-action');
+    if(action === 'go-route'){
+      node.addEventListener('click', ()=>{ state.activeRouteId = node.getAttribute('data-route-id'); state.view='route-detail'; renderView(); });
+    } else if(action === 'go-routes-tab'){
+      node.addEventListener('click', ()=>{ state.view='routes'; renderView(); });
+    } else if(action === 'quick-duration'){
+      node.addEventListener('click', ()=>{
+        const d = parseInt(node.getAttribute('data-duration'),10);
+        const r = ROTEIROS.find(r=>r.duracao===d);
+        state.activeRouteId = r.id; state.view='route-detail'; renderView();
+      });
+    } else if(action === 'scan-qr'){
+      node.addEventListener('click', ()=> openQuizModal(node.getAttribute('data-piece-id')) );
+    } else if(action === 'ask-about'){
+      node.addEventListener('click', ()=>{ state.activePieceId = node.getAttribute('data-piece-id'); state.view='guide'; renderView(); });
+    } else if(action === 'select-piece'){
+      node.addEventListener('click', ()=>{ state.activePieceId = node.getAttribute('data-piece-id') || null; renderView(); });
+    } else if(action === 'set-profile'){
+      node.addEventListener('click', ()=>{ state.profile = node.getAttribute('data-profile'); saveState(); renderView(); });
+    }
+  });
+
+  const form = document.getElementById('chat-form');
+  if(form){
+    form.addEventListener('submit', e=>{
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const val = input.value.trim();
+      if(!val || !sample) return;
+      input.value = '';
+      sendGuideQuestion(val);
+    });
+  }
+}
+
+/* ============ QUIZ MODAL ============ */
+function openQuizModal(pieceId){
+  const p = byId(pieceId);
+  const root = document.getElementById('modal-root');
+  const alreadyVisited = state.visited.includes(pieceId);
+  root.innerHTML = ''
+    + '<div class="modal-layer" id="modal-layer">'
+      + '<div class="modal">'
+        + '<div class="modal-top"><span class="modal-title">Pista lida</span><button class="modal-close" id="modal-close">'+ICONS.close+'</button></div>'
+        + (alreadyVisited
+          ? '<p class="quiz-feedback">Já concluiu esta paragem — a sua medalha de "'+p.nome+'" está guardada em Conquistas.</p><button class="btn btn-primary" id="modal-ok">Fechar</button>'
+          : ''
+            + '<p class="quiz-feedback"><strong>'+p.nome+'</strong> · '+p.curiosidade+'</p>'
+            + '<p class="quiz-feedback" style="margin-top:-8px"><strong>'+p.quiz.pergunta+'</strong></p>'
+            + '<div id="quiz-opts">' + p.quiz.opcoes.map((op,i)=>'<button class="quiz-opt" data-i="'+i+'">'+op+'</button>').join('') + '</div>'
+            + '<div id="quiz-after"></div>'
+          )
+      + '</div>'
+    + '</div>';
+
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal-layer').addEventListener('click', e=>{ if(e.target.id==='modal-layer') closeModal(); });
+  const okBtn = document.getElementById('modal-ok');
+  if(okBtn) okBtn.addEventListener('click', closeModal);
+
+  const opts = document.getElementById('quiz-opts');
+  if(opts){
+    opts.querySelectorAll('.quiz-opt').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const i = parseInt(btn.getAttribute('data-i'),10);
+        const correct = i === p.quiz.resposta;
+        opts.querySelectorAll('.quiz-opt').forEach((b,bi)=>{
+          b.disabled = true;
+          if(bi === p.quiz.resposta) b.classList.add('correct');
+          else if(bi === i && !correct) b.classList.add('wrong');
+        });
+        const gained = correct ? 10 : 4;
+        state.points += gained;
+        if(!state.visited.includes(pieceId)) state.visited.push(pieceId);
+        if(!state.badges.includes(pieceId)) state.badges.push(pieceId);
+        saveState();
+        document.getElementById('quiz-after').innerHTML = ''
+          + '<div class="quiz-result">'+carranca(30)+'<strong>+'+gained+' pontos</strong></div>'
+          + '<p class="quiz-feedback">'+p.quiz.explicacao+'</p>'
+          + '<button class="btn btn-primary" id="modal-ok-2">Continuar</button>';
+        document.getElementById('modal-ok-2').addEventListener('click', ()=>{ closeModal(); renderView(); });
+        pushToast('🏅 Medalha "'+p.nome+'" desbloqueada!');
+      });
+    });
+  }
+}
+function closeModal(){ document.getElementById('modal-root').innerHTML = ''; }
+
+/* ============ INIT ============ */
+renderView();
+
+})();
+</script>
+</body>
+</html>
