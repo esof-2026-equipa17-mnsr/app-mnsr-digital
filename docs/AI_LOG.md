@@ -15,8 +15,8 @@
 - **Prompt utilizado:** Foi anexada a ficha prática da Sessão 2 com o pedido "do it", para gerar os artefactos do M1: secção da Visão no README, 3 EPICs, User Stories com estrutura Como/quero/para que, 3 Cs e cenários BDD, matriz do Exercício 2.3 e script de configuração do GitHub.
 - **Resultado obtido:** 3 EPICs, 8 User Stories com 20 cenários BDD, matriz dos 3 Cs, script `setup-m1.sh`.
 - **Validação humana realizada:** _(A PREENCHER PELA EQUIPA — só o que foi realmente feito)_
-  - [ ] Revisão de cada User Story pela equipa
-  - [ ] Valores numéricos confirmados ou ajustados com o curador/docente (ver `docs/BACKLOG.md`)
-  - [ ] Perguntas da secção "Conversation" discutidas com o PO e respostas registadas nas issues
-  - [ ] Script `setup-m1.sh` executado e resultado verificado no GitHub
+  - [ x] Revisão de cada User Story pela equipa
+  - [ x] Valores numéricos confirmados ou ajustados com o curador/docente (ver `docs/BACKLOG.md`)
+  - [x ] Perguntas da secção "Conversation" discutidas com o PO e respostas registadas nas issues
+  - [ x] Script `setup-m1.sh` executado e resultado verificado no GitHub
   - [ ] Alterações feitas ao texto gerado pela IA: ...
