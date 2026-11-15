@@ -97,13 +97,15 @@ sequenceDiagram
     alt Ligacao ativa disponivel
         Repo-->>Srv: listaObrasAtualizada
     else Modo Offline (Galerias sem Wi-Fi/4G)
-        Note right of Repo: Leitura rapida de cache_roteiro.dat (< 1.0s)
+        Note right of Repo: Leitura rapida de cache_roteiro.dat (inferior a 1.0s)
         Repo-->>Srv: listaObrasCacheLocal
     end
     deactivate Repo
 
-    create participant Rot
-    Srv-->>Rot: create(id, nome, duracao)
+    Srv->>Rot: criarRoteiro(id, nome, duracao)
+    activate Rot
+    Rot-->>Srv: instanciaRoteiro
+    deactivate Rot
 
     loop Para cada obra compativel com tema e tempo
         Srv->>Rot: adicionarObra(obra)
