@@ -18,6 +18,11 @@ typedef struct {
     char fonte[120];
 } FichaObra;
 
+// Estado persistente da sessao (permite manter a pergunta mesmo navegando entre menus)
+static int ligacao_rede = 1; // 1 = Online (Wi-Fi/4G), 0 = Sem cobertura de rede
+static char pergunta_pendente[256] = "";
+static int tem_pergunta_pendente = 0;
+
 static int lerOpcaoAssistente() {
     int valor;
     while (scanf("%d", &valor) != 1) {
@@ -156,7 +161,6 @@ static int carregarBaseConhecimento(FichaObra acervo[]) {
     return 8;
 }
 
-// Verifica se a pergunta se relaciona minimamente com o dominio do museu/arte
 static int pertenceAoDominioMuseu(const char *norm) {
     const char *termos_dominio[] = {
         "museu", "mnsr", "acervo", "obra", "obras", "quadro", "pintura",
@@ -173,7 +177,6 @@ static int pertenceAoDominioMuseu(const char *norm) {
     return 0;
 }
 
-// Pesquisa uma obra na base documental a partir da pergunta normalizada
 static int encontrarObraNaBase(const char *pergunta_norm, FichaObra acervo[], int total) {
     if (strstr(pergunta_norm, "desterro") != NULL) return 0;
     if (strstr(pergunta_norm, "pousao") != NULL || strstr(pergunta_norm, "columbano") != NULL) return 1;
@@ -194,23 +197,19 @@ static int encontrarObraNaBase(const char *pergunta_norm, FichaObra acervo[], in
     return -1;
 }
 
-// Gera resposta estritamente fundamentada na ficha tecnica (RNF-02: sem alucinacoes)
 static int responderComBaseNoAcervo(const char *pergunta, FichaObra acervo[], int total, char *resposta_out, int max_out) {
     char norm[300];
     normalizarTexto(pergunta, norm, sizeof(norm));
 
     int idx = encontrarObraNaBase(norm, acervo, total);
 
-    // Caso nao encontre uma obra conhecida da base documental:
     if (idx == -1) {
-        // Cenario 2 (US-07): Pergunta sobre arte/museu mas sobre obra inexistente nos documentos
         if (pertenceAoDominioMuseu(norm)) {
             snprintf(resposta_out, max_out,
                      "Nao tenho essa informacao nos documentos oficiais do acervo do MNSR. Para garantir rigor factual, nao apresento respostas especulativas sobre obras ou detalhes nao documentados.");
             return 0;
         }
 
-        // Cenario 1 (US-07): Pergunta totalmente fora do dominio do museu (ex.: gastronomia, desporto, etc.)
         snprintf(resposta_out, max_out,
                  "Lamento, mas apenas posso responder a perguntas relacionadas com o acervo e a visita ao Museu Nacional Soares dos Reis (MNSR).\nConvido-o a perguntar sobre as obras em exposicao, como 'O Desterro', o 'Retrato de Henrique Pousao' ou o 'Auto-retrato' de Aurelia de Sousa!");
         return 0;
@@ -260,7 +259,6 @@ static int responderComBaseNoAcervo(const char *pergunta, FichaObra acervo[], in
                  "Obra: %s | Autor: %s | Ano: %s\nTecnica: %s | Localizacao: %s\nContexto: %s\nFonte: %s",
                  obra.titulo, obra.autor, obra.ano, obra.tecnica, obra.sala, obra.contexto, obra.fonte);
     } else {
-        // Cenario 2 (US-07): A obra existe no acervo, mas o detalhe pedido (ex.: preco, peso, restauro) nao consta na base documental
         snprintf(resposta_out, max_out,
                  "Nao tenho essa informacao especifica nos documentos oficiais do acervo sobre '%s'. Para evitar qualquer especulacao, apenas disponho de dados comprovados sobre autor, ano, tecnica, localizacao e contexto historico.",
                  obra.titulo);
@@ -270,7 +268,53 @@ static int responderComBaseNoAcervo(const char *pergunta, FichaObra acervo[], in
     return 1;
 }
 
-// Validacao RNF-02 (US-06): Bateria automatica de 50 perguntas sobre o acervo (meta >= 98%)
+// Processa o envio da pergunta se houver ligacao de rede, ou preserva-a em caso offline
+static void processarEnvioPergunta(const char *texto_pergunta, FichaObra acervo[], int total_obras) {
+    char resposta[700];
+
+    snprintf(pergunta_pendente, sizeof(pergunta_pendente), "%s", texto_pergunta);
+    tem_pergunta_pendente = 1;
+
+    while (1) {
+        if (ligacao_rede) {
+            clock_t inicio = clock();
+            responderComBaseNoAcervo(pergunta_pendente, acervo, total_obras, resposta, sizeof(resposta));
+            clock_t fim = clock();
+            double tempo_resposta = (double)(fim - inicio) / CLOCKS_PER_SEC;
+
+            printf("\n[Assistente MNSR - Tempo de resposta: %.3f segundos (< 5s)]\n", tempo_resposta);
+            printf("%s\n", resposta);
+
+            tem_pergunta_pendente = 0;
+            pergunta_pendente[0] = '\0';
+            return;
+        } else {
+            // Cenario 1 (US-08): Falta de ligacao Wi-Fi/4G
+            printf("\n[Sem Ligacao a Internet - Tolerancia a Falhas]\n");
+            printf("O Assistente IA requer ligacao Wi-Fi ou 4G para consultar o servico RAG.\n");
+            printf("A sua pergunta ficou guardada no campo de texto e nao foi perdida:\n");
+            printf("  >> \"%s\"\n", pergunta_pendente);
+            printf("Nota: Pode continuar a usar os Roteiros Inteligentes e as Fichas em cache normalmente.\n");
+
+            printf("\n1 - Restabelecer ligacao (Wi-Fi/4G ON) e [Tentar novamente]\n");
+            printf("2 - [Tentar novamente] (manter estado atual da rede)\n");
+            printf("0 - Voltar (manter pergunta guardada para enviar mais tarde)\n");
+            printf("Opcao: ");
+            int acao = lerOpcaoAssistente();
+
+            if (acao == 1) {
+                ligacao_rede = 1;
+                printf("\n[Ligacao Wi-Fi/4G restabelecida!] A enviar pergunta guardada...\n");
+                // Cenario 2 (US-08): Reenvia automaticamente sem ter de reescrever
+            } else if (acao == 2) {
+                printf("\nA verificar ligacao de rede...\n");
+            } else {
+                return;
+            }
+        }
+    }
+}
+
 static void executarBateriaTeste50Perguntas(FichaObra acervo[], int total) {
     const char *perguntas_teste[50] = {
         "Quem esculpiu O Desterro e em que ano?",
@@ -347,15 +391,24 @@ void iniciarAssistenteIA() {
     int total_obras = carregarBaseConhecimento(acervo);
     int opcao = -1;
     char pergunta[256];
-    char resposta[700];
 
     printf("\n=== MNSR Digital - Assistente IA / RAG (Idioma: Portugues) ===\n");
     printf("Base de conhecimento: Fichas tecnicas e textos oficiais do acervo MNSR.\n");
 
     while (opcao != 0) {
-        printf("\n1 - Fazer uma pergunta sobre uma obra do acervo\n");
-        printf("2 - Listar obras disponiveis na base documental\n");
-        printf("3 - Executar bateria de teste RNF-02 (50 perguntas / >= 98%% fidelidade)\n");
+        printf("\nEstado da Rede: %s\n",
+               ligacao_rede ? "ONLINE (Wi-Fi/4G ativo)" : "OFFLINE (Sem cobertura de rede)");
+        if (tem_pergunta_pendente) {
+            printf("[Pergunta guardada no campo de texto]: \"%s\"\n", pergunta_pendente);
+        }
+
+        printf("1 - Fazer uma pergunta sobre uma obra do acervo\n");
+        printf("2 - Consultar fichas tecnicas em cache (Disponivel Offline)\n");
+        printf("3 - Simular/Alternar ligacao de rede (Wi-Fi/4G ON/OFF)\n");
+        printf("4 - Executar bateria de teste RNF-02 (50 perguntas / >= 98%% fidelidade)\n");
+        if (tem_pergunta_pendente) {
+            printf("5 - [Tentar novamente] enviar pergunta guardada\n");
+        }
         printf("0 - Voltar ao menu principal\n");
         printf("Opcao: ");
         opcao = lerOpcaoAssistente();
@@ -370,22 +423,23 @@ void iniciarAssistenteIA() {
                     continue;
                 }
 
-                clock_t inicio = clock();
-                responderComBaseNoAcervo(pergunta, acervo, total_obras, resposta, sizeof(resposta));
-                clock_t fim = clock();
-                double tempo_resposta = (double)(fim - inicio) / CLOCKS_PER_SEC;
-
-                printf("\n[Assistente MNSR - Tempo de resposta: %.3f segundos (< 5s)]\n", tempo_resposta);
-                printf("%s\n", resposta);
+                processarEnvioPergunta(pergunta, acervo, total_obras);
             }
         } else if (opcao == 2) {
-            printf("\n--- Obras na Base de Conhecimento do MNSR ---\n");
+            printf("\n--- Fichas Tecnicas em Cache Local (Modo Offline Disponivel) ---\n");
             for (int i = 0; i < total_obras; i++) {
-                printf("- %s (%s, %s) [%s]\n",
-                       acervo[i].titulo, acervo[i].autor, acervo[i].ano, acervo[i].id_ficha);
+                printf("- [%s] %s | %s (%s) | %s\n",
+                       acervo[i].id_ficha, acervo[i].titulo, acervo[i].autor,
+                       acervo[i].ano, acervo[i].sala);
             }
         } else if (opcao == 3) {
+            ligacao_rede = !ligacao_rede;
+            printf("\nEstado da ligacao de rede alterado para: %s\n",
+                   ligacao_rede ? "ONLINE (Wi-Fi/4G ativo)" : "OFFLINE (Sem cobertura de rede)");
+        } else if (opcao == 4) {
             executarBateriaTeste50Perguntas(acervo, total_obras);
+        } else if (opcao == 5 && tem_pergunta_pendente) {
+            processarEnvioPergunta(pergunta_pendente, acervo, total_obras);
         } else if (opcao != 0) {
             printf("Opcao invalida.\n");
         }
