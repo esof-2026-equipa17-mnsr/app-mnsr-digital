@@ -2,21 +2,23 @@
 #include "roteiros.c"
 
 int main() {
+    // Acervo guardado em cache local (suporta modo offline - RNF-01)
     Obra acervo[] = {
-        {1, "O Desterro (Soares dos Reis)", "Escultura", 5},
-        {2, "Retrato de Henrique Pousao (Columbano)", "Pintura", 5},
-        {3, "Custodia de Bemposta", "Ourivesaria", 4},
-        {4, "Senhora do O", "Escultura", 5},
-        {5, "Auto-retrato (Aurelia de Sousa)", "Pintura", 5},
-        {6, "Caixao de Mumia Egipcia", "Arqueologia", 5},
-        {7, "Biombo Namban", "Artes Decorativas", 6},
-        {8, "Cristo Crucificado (Frei Cipriano)", "Escultura", 5},
-        {9, "Paisagem do Douro (Silva Porto)", "Pintura", 5},
-        {10, "Salva de Prata Dourada", "Ourivesaria", 5},
-        {11, "Busto de Camilo Castelo Branco", "Escultura", 4},
-        {12, "Sagrada Familia (Vasco Fernandes)", "Pintura", 5}
+        {1, "O Desterro (Soares dos Reis)", "Escultura", 5, 0},
+        {2, "Retrato de Henrique Pousao (Columbano)", "Pintura", 5, 0},
+        {3, "Custodia de Bemposta", "Ourivesaria", 4, 0},
+        {4, "Senhora do O", "Escultura", 5, 0},
+        {5, "Auto-retrato (Aurelia de Sousa)", "Pintura", 5, 0},
+        {6, "Caixao de Mumia Egipcia", "Arqueologia", 5, 0},
+        {7, "Biombo Namban", "Artes Decorativas", 6, 0},
+        {8, "Cristo Crucificado (Frei Cipriano)", "Escultura", 5, 0},
+        {9, "Paisagem do Douro (Silva Porto)", "Pintura", 5, 0},
+        {10, "Salva de Prata Dourada", "Ourivesaria", 5, 0},
+        {11, "Busto de Camilo Castelo Branco", "Escultura", 4, 0},
+        {12, "Sagrada Familia (Vasco Fernandes)", "Pintura", 5, 0}
     };
     int total_obras = 12;
+    int indices_roteiro[12];
     int opcao_tempo = 0;
     int opcao_tema = 0;
     int tempo_visitante = 0;
@@ -64,7 +66,45 @@ int main() {
     }
 
     printf("\n");
-    gerarRoteiroPorTema(acervo, total_obras, tempo_visitante, tema_escolhido);
+    int qtd_sugeridas = gerarRoteiroPorTema(acervo, total_obras, tempo_visitante, tema_escolhido, indices_roteiro);
+
+    if (qtd_sugeridas > 0) {
+        int reajustar = 0;
+        printf("\nMenu do Roteiro - A meio da visita:\n");
+        printf("1 - Reajustar tempo restante ('Tenho X minutos')\n");
+        printf("0 - Continuar roteiro atual\n");
+        printf("Opcao: ");
+        scanf("%d", &reajustar);
+
+        if (reajustar == 1) {
+            int ja_visitadas = 0;
+            int tempo_restante = 0;
+
+            printf("Quantas obras deste roteiro ja visitou? (0 a %d): ", qtd_sugeridas);
+            scanf("%d", &ja_visitadas);
+
+            if (ja_visitadas < 0) ja_visitadas = 0;
+            if (ja_visitadas > qtd_sugeridas) ja_visitadas = qtd_sugeridas;
+
+            for (int i = 0; i < ja_visitadas; i++) {
+                acervo[indices_roteiro[i]].visitada = 1;
+            }
+
+            printf("Tenho quantos minutos restantes? ");
+            scanf("%d", &tempo_restante);
+
+            int restantes = reajustarRoteiro(acervo, total_obras, tempo_restante, tema_escolhido);
+
+            if (restantes == 0) {
+                int acao_fim = 0;
+                printf("\nAcao disponivel:\n");
+                printf("1 - Terminar visita\n");
+                printf("Opcao: ");
+                scanf("%d", &acao_fim);
+                printf("\nVisita terminada. Obrigado por utilizar o MNSR Digital!\n");
+            }
+        }
+    }
 
     return 0;
 }
