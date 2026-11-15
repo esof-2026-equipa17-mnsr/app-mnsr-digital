@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "roteiros.c"
 #include "gamificacao.c"
+#include "assistente.c"
 
 void menuRoteiros() {
     Obra acervo[] = {
@@ -116,6 +117,7 @@ int main() {
         printf("========================================\n");
         printf("1 - Roteiros Inteligentes\n");
         printf("2 - Caca ao Tesouro (QR Codes)\n");
+        printf("3 - Assistente IA / RAG (Acervo MNSR)\n");
         printf("0 - Sair\n");
         printf("Opcao: ");
         menu_principal = lerOpcaoNumerica();
@@ -126,6 +128,9 @@ int main() {
                 break;
             case 2:
                 iniciarCacaAoTesouro();
+                break;
+            case 3:
+                iniciarAssistenteIA();
                 break;
             case 0:
                 printf("\nAte breve no Museu Nacional Soares dos Reis!\n");
