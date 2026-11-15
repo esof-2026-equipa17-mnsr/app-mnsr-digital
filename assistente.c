@@ -1,6 +1,3 @@
-//
-// Created by Gabriel Martins on 11/15/2026.
-//
 #ifndef ASSISTENTE_H
 #define ASSISTENTE_H
 
@@ -43,7 +40,6 @@ static void normalizarTexto(const char *origem, char *destino, int max_len) {
                 destino[j++] = ' ';
             }
         } else if (c == 0xC3 && origem[i + 1] != '\0') {
-            // Conversao basica de caracteres portugueses UTF-8 (a, e, i, o, u, c)
             unsigned char next = (unsigned char)origem[i + 1];
             i++;
             if (next >= 0x80 && next <= 0x85) destino[j++] = 'a';
@@ -160,18 +156,34 @@ static int carregarBaseConhecimento(FichaObra acervo[]) {
     return 8;
 }
 
+// Verifica se a pergunta se relaciona minimamente com o dominio do museu/arte
+static int pertenceAoDominioMuseu(const char *norm) {
+    const char *termos_dominio[] = {
+        "museu", "mnsr", "acervo", "obra", "obras", "quadro", "pintura",
+        "escultura", "estatua", "artista", "autor", "esculpiu", "pintou",
+        "sala", "exposicao", "galeria", "visita", "colecao", "ficha",
+        "ourivesaria", "arqueologia", "retrato", "arte", "soares dos reis"
+    };
+    int n = sizeof(termos_dominio) / sizeof(termos_dominio[0]);
+    for (int i = 0; i < n; i++) {
+        if (strstr(norm, termos_dominio[i]) != NULL) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 // Pesquisa uma obra na base documental a partir da pergunta normalizada
 static int encontrarObraNaBase(const char *pergunta_norm, FichaObra acervo[], int total) {
     if (strstr(pergunta_norm, "desterro") != NULL) return 0;
     if (strstr(pergunta_norm, "pousao") != NULL || strstr(pergunta_norm, "columbano") != NULL) return 1;
     if (strstr(pergunta_norm, "custodia") != NULL || strstr(pergunta_norm, "bemposta") != NULL) return 2;
     if (strstr(pergunta_norm, "senhora do o") != NULL) return 3;
-    if (strstr(pergunta_norm, "aurelia") != NULL || strstr(pergunta_norm, "retrato") != NULL) return 4;
+    if (strstr(pergunta_norm, "aurelia") != NULL || strstr(pergunta_norm, "auto retrato") != NULL || strstr(pergunta_norm, "autoretrato") != NULL) return 4;
     if (strstr(pergunta_norm, "mumia") != NULL || strstr(pergunta_norm, "egipcia") != NULL || strstr(pergunta_norm, "caixao") != NULL) return 5;
     if (strstr(pergunta_norm, "namban") != NULL || strstr(pergunta_norm, "biombo") != NULL) return 6;
     if (strstr(pergunta_norm, "camilo") != NULL || strstr(pergunta_norm, "busto") != NULL) return 7;
 
-    // Fallback por correspondencia direta com o titulo normalizado
     char titulo_norm[100];
     for (int i = 0; i < total; i++) {
         normalizarTexto(acervo[i].titulo, titulo_norm, sizeof(titulo_norm));
@@ -182,28 +194,46 @@ static int encontrarObraNaBase(const char *pergunta_norm, FichaObra acervo[], in
     return -1;
 }
 
-// Gera resposta estritamente fundamentada na ficha tecnica (sem alucinacoes)
+// Gera resposta estritamente fundamentada na ficha tecnica (RNF-02: sem alucinacoes)
 static int responderComBaseNoAcervo(const char *pergunta, FichaObra acervo[], int total, char *resposta_out, int max_out) {
     char norm[300];
     normalizarTexto(pergunta, norm, sizeof(norm));
 
     int idx = encontrarObraNaBase(norm, acervo, total);
+
+    // Caso nao encontre uma obra conhecida da base documental:
     if (idx == -1) {
+        // Cenario 2 (US-07): Pergunta sobre arte/museu mas sobre obra inexistente nos documentos
+        if (pertenceAoDominioMuseu(norm)) {
+            snprintf(resposta_out, max_out,
+                     "Nao tenho essa informacao nos documentos oficiais do acervo do MNSR. Para garantir rigor factual, nao apresento respostas especulativas sobre obras ou detalhes nao documentados.");
+            return 0;
+        }
+
+        // Cenario 1 (US-07): Pergunta totalmente fora do dominio do museu (ex.: gastronomia, desporto, etc.)
         snprintf(resposta_out, max_out,
-                 "Nao encontrei nenhuma obra correspondente na base documental do acervo do MNSR.");
+                 "Lamento, mas apenas posso responder a perguntas relacionadas com o acervo e a visita ao Museu Nacional Soares dos Reis (MNSR).\nConvido-o a perguntar sobre as obras em exposicao, como 'O Desterro', o 'Retrato de Henrique Pousao' ou o 'Auto-retrato' de Aurelia de Sousa!");
         return 0;
     }
 
     FichaObra obra = acervo[idx];
     int pede_autor = (strstr(norm, "quem") != NULL || strstr(norm, "autor") != NULL ||
                       strstr(norm, "esculpiu") != NULL || strstr(norm, "pintou") != NULL ||
-                      strstr(norm, "artista") != NULL);
+                      strstr(norm, "artista") != NULL || strstr(norm, "produziu") != NULL ||
+                      strstr(norm, "criou") != NULL);
     int pede_ano = (strstr(norm, "ano") != NULL || strstr(norm, "quando") != NULL ||
-                    strstr(norm, "data") != NULL || strstr(norm, "seculo") != NULL);
+                    strstr(norm, "data") != NULL || strstr(norm, "seculo") != NULL ||
+                    strstr(norm, "epoca") != NULL);
     int pede_sala = (strstr(norm, "onde") != NULL || strstr(norm, "sala") != NULL ||
-                     strstr(norm, "local") != NULL);
-    int pede_tecnica = (strstr(norm, "material") != NULL || strstr(norm, "tecnica") != NULL ||
-                        strstr(norm, "feito") != NULL);
+                     strstr(norm, "local") != NULL || strstr(norm, "exposto") != NULL ||
+                     strstr(norm, "fica") != NULL);
+    int pede_tecnica = (strstr(norm, "material") != NULL || strstr(norm, "materiais") != NULL ||
+                        strstr(norm, "tecnica") != NULL || strstr(norm, "feito") != NULL);
+    int pede_contexto = (strstr(norm, "contexto") != NULL || strstr(norm, "historia") != NULL ||
+                         strstr(norm, "sobre") != NULL || strstr(norm, "fala") != NULL ||
+                         strstr(norm, "explica") != NULL || strstr(norm, "significado") != NULL ||
+                         strstr(norm, "origem") != NULL || strstr(norm, "retrata") != NULL ||
+                         strstr(norm, "ficha") != NULL);
 
     if (pede_autor && pede_ano) {
         snprintf(resposta_out, max_out,
@@ -225,16 +255,22 @@ static int responderComBaseNoAcervo(const char *pergunta, FichaObra acervo[], in
         snprintf(resposta_out, max_out,
                  "Tecnica e materiais de '%s': %s.\nFonte: %s",
                  obra.titulo, obra.tecnica, obra.fonte);
-    } else {
+    } else if (pede_contexto) {
         snprintf(resposta_out, max_out,
                  "Obra: %s | Autor: %s | Ano: %s\nTecnica: %s | Localizacao: %s\nContexto: %s\nFonte: %s",
                  obra.titulo, obra.autor, obra.ano, obra.tecnica, obra.sala, obra.contexto, obra.fonte);
+    } else {
+        // Cenario 2 (US-07): A obra existe no acervo, mas o detalhe pedido (ex.: preco, peso, restauro) nao consta na base documental
+        snprintf(resposta_out, max_out,
+                 "Nao tenho essa informacao especifica nos documentos oficiais do acervo sobre '%s'. Para evitar qualquer especulacao, apenas disponho de dados comprovados sobre autor, ano, tecnica, localizacao e contexto historico.",
+                 obra.titulo);
+        return 0;
     }
 
     return 1;
 }
 
-// Cenario 3 (RNF-02): Bateria automatica de 50 perguntas sobre o acervo (meta >= 98%)
+// Validacao RNF-02 (US-06): Bateria automatica de 50 perguntas sobre o acervo (meta >= 98%)
 static void executarBateriaTeste50Perguntas(FichaObra acervo[], int total) {
     const char *perguntas_teste[50] = {
         "Quem esculpiu O Desterro e em que ano?",
@@ -295,7 +331,6 @@ static void executarBateriaTeste50Perguntas(FichaObra acervo[], int total) {
     printf("\n=== Validacao RNF-02: Bateria de 50 Perguntas do Acervo ===\n");
     for (int i = 0; i < 50; i++) {
         int ok = responderComBaseNoAcervo(perguntas_teste[i], acervo, total, resposta, sizeof(resposta));
-        // Verifica se encontrou a obra e se incluiu explicitamente a fonte documental
         if (ok && strstr(resposta, "Fonte: Ficha Tecnica Oficial MNSR") != NULL) {
             conformes++;
         }
@@ -335,7 +370,6 @@ void iniciarAssistenteIA() {
                     continue;
                 }
 
-                // Cenario 2: Medicao do tempo de resposta (< 5 segundos)
                 clock_t inicio = clock();
                 responderComBaseNoAcervo(pergunta, acervo, total_obras, resposta, sizeof(resposta));
                 clock_t fim = clock();
