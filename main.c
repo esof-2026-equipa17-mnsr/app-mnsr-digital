@@ -2,7 +2,6 @@
 #include "roteiros.c"
 
 int main() {
-    // Acervo de obras emblematicas (tempo = contemplacao + deslocacao entre salas)
     Obra acervo[] = {
         {1, "O Desterro (Soares dos Reis)", "Escultura", 5},
         {2, "Retrato de Henrique Pousao (Columbano)", "Pintura", 5},
@@ -18,35 +17,54 @@ int main() {
         {12, "Sagrada Familia (Vasco Fernandes)", "Pintura", 5}
     };
     int total_obras = 12;
-    int opcao = 0;
+    int opcao_tempo = 0;
+    int opcao_tema = 0;
     int tempo_visitante = 0;
+    const char *tema_escolhido = "Todos";
 
     printf("=== MNSR Digital - Roteiros Inteligentes ===\n");
     printf("Selecione a duracao da sua visita:\n");
-    printf("1 - 30 minutos (Essencial: 5 a 7 obras)\n");
+    printf("1 - 30 minutos (Essencial)\n");
     printf("2 - 60 minutos (Intermedio)\n");
     printf("3 - 90 minutos (Completo)\n");
     printf("Opcao: ");
-    scanf("%d", &opcao);
+    scanf("%d", &opcao_tempo);
 
-    switch (opcao) {
-        case 1:
-            tempo_visitante = 30;
-            break;
-        case 2:
-            tempo_visitante = 60;
-            break;
-        case 3:
-            tempo_visitante = 90;
-            break;
+    switch (opcao_tempo) {
+        case 1: tempo_visitante = 30; break;
+        case 2: tempo_visitante = 60; break;
+        case 3: tempo_visitante = 90; break;
         default:
-            printf("\nOpcao invalida. A aplicar duracao minima de 30 minutos.\n");
+            printf("Opcao invalida. A aplicar duracao minima de 30 minutos.\n");
             tempo_visitante = 30;
             break;
     }
 
+    printf("\nSelecione o tema de interesse:\n");
+    printf("0 - Todos os temas\n");
+    printf("1 - Pintura\n");
+    printf("2 - Escultura\n");
+    printf("3 - Ourivesaria\n");
+    printf("4 - Arqueologia\n");
+    printf("5 - Artes Decorativas\n");
+    printf("Opcao: ");
+    scanf("%d", &opcao_tema);
+
+    switch (opcao_tema) {
+        case 0: tema_escolhido = "Todos"; break;
+        case 1: tema_escolhido = "Pintura"; break;
+        case 2: tema_escolhido = "Escultura"; break;
+        case 3: tema_escolhido = "Ourivesaria"; break;
+        case 4: tema_escolhido = "Arqueologia"; break;
+        case 5: tema_escolhido = "Artes Decorativas"; break;
+        default:
+            printf("Tema invalido. A mostrar todos os temas.\n");
+            tema_escolhido = "Todos";
+            break;
+    }
+
     printf("\n");
-    gerarRoteiroPorTempo(acervo, total_obras, tempo_visitante);
+    gerarRoteiroPorTema(acervo, total_obras, tempo_visitante, tema_escolhido);
 
     return 0;
 }
