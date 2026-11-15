@@ -8,101 +8,98 @@ void menuRoteiros() {
         {1, "O Desterro (Soares dos Reis)", "Escultura", 5, 0},
         {2, "Retrato de Henrique Pousao (Columbano)", "Pintura", 5, 0},
         {3, "Custodia de Bemposta", "Ourivesaria", 4, 0},
-        {4, "Senhora do O", "Escultura", 5, 0},
+        {4, "Senhora do O (Mestre de Pero)", "Escultura", 5, 0},
         {5, "Auto-retrato (Aurelia de Sousa)", "Pintura", 5, 0},
         {6, "Caixao de Mumia Egipcia", "Arqueologia", 5, 0},
-        {7, "Biombo Namban", "Artes Decorativas", 6, 0},
+        {7, "Biombo Namban", "Artes Decorativas", 5, 0},
         {8, "Cristo Crucificado (Frei Cipriano)", "Escultura", 5, 0},
-        {9, "Paisagem do Douro (Silva Porto)", "Pintura", 5, 0},
+        {9, "Paisagem do Douro (Silva Porto)", "Pintura", 4, 0},
         {10, "Salva de Prata Dourada", "Ourivesaria", 5, 0},
-        {11, "Busto de Camilo Castelo Branco", "Escultura", 4, 0},
-        {12, "Sagrada Familia (Vasco Fernandes)", "Pintura", 5, 0}
+        {11, "Busto de Camilo Castelo Branco", "Escultura", 5, 0},
+        {12, "Sagrada Familia (Vasco Fernandes)", "Pintura", 5, 0},
+        {13, "A Morte de Adonis (Soares dos Reis)", "Escultura", 5, 0},
+        {14, "O Negro (Henrique Pousao)", "Pintura", 5, 0},
+        {15, "Contador Indo-Portugues", "Artes Decorativas", 4, 0},
+        {16, "A Flor Agreste (Soares dos Reis)", "Escultura", 5, 0},
+        {17, "Cecilia (Henrique Pousao)", "Pintura", 5, 0},
+        {18, "Estela Funeraria Romana", "Arqueologia", 5, 0}
     };
-    int total_obras = 12;
-    int indices_roteiro[12];
+    int total_obras = 18;
+    int indices_roteiro[18];
     int opcao_tempo = 0;
     int opcao_tema = 0;
     int tempo_visitante = 0;
     const char *tema_escolhido = "Todos";
 
     printf("\n=== MNSR Digital - Roteiros Inteligentes ===\n");
-    printf("Selecione a duracao da sua visita:\n");
-    printf("1 - 30 minutos (Essencial)\n");
-    printf("2 - 60 minutos (Intermedio)\n");
-    printf("3 - 90 minutos (Completo)\n");
+    printf("1 - Gerar novo roteiro personalizado\n");
+    printf("2 - Aceder ao ultimo roteiro guardado em cache [Modo Offline]\n");
+    printf("0 - Voltar ao menu principal\n");
     printf("Opcao: ");
-    scanf("%d", &opcao_tempo);
+    int acao_inicial = lerOpcaoNumerica();
 
-    switch (opcao_tempo) {
-        case 1: tempo_visitante = 30; break;
-        case 2: tempo_visitante = 60; break;
-        case 3: tempo_visitante = 90; break;
-        default:
-            printf("Opcao invalida. A aplicar duracao minima de 30 minutos.\n");
-            tempo_visitante = 30;
-            break;
+    if (acao_inicial == 2) {
+        carregarRoteiroCache();
+        return;
+    } else if (acao_inicial != 1) {
+        return;
     }
 
-    printf("\nSelecione o tema de interesse:\n");
-    printf("0 - Todos os temas\n");
-    printf("1 - Pintura\n");
-    printf("2 - Escultura\n");
+    printf("\nSelecione a duracao da visita:\n");
+    printf("1 - 30 minutos (5 a 7 obras)\n");
+    printf("2 - 60 minutos (10 a 14 obras)\n");
+    printf("3 - 90 minutos (15 a 21 obras)\n");
+    printf("Opcao: ");
+    opcao_tempo = lerOpcaoNumerica();
+
+    if (opcao_tempo == 1) tempo_visitante = 30;
+    else if (opcao_tempo == 2) tempo_visitante = 60;
+    else if (opcao_tempo == 3) tempo_visitante = 90;
+    else {
+        printf("Duracao invalida. A assumir 30 minutos.\n");
+        tempo_visitante = 30;
+    }
+
+    printf("\nSelecione o tema da visita:\n");
+    printf("0 - Todos os Temas\n");
+    printf("1 - Escultura\n");
+    printf("2 - Pintura\n");
     printf("3 - Ourivesaria\n");
     printf("4 - Arqueologia\n");
     printf("5 - Artes Decorativas\n");
     printf("Opcao: ");
-    scanf("%d", &opcao_tema);
+    opcao_tema = lerOpcaoNumerica();
 
-    switch (opcao_tema) {
-        case 0: tema_escolhido = "Todos"; break;
-        case 1: tema_escolhido = "Pintura"; break;
-        case 2: tema_escolhido = "Escultura"; break;
-        case 3: tema_escolhido = "Ourivesaria"; break;
-        case 4: tema_escolhido = "Arqueologia"; break;
-        case 5: tema_escolhido = "Artes Decorativas"; break;
-        default:
-            printf("Tema invalido. A mostrar todos os temas.\n");
-            tema_escolhido = "Todos";
-            break;
-    }
+    if (opcao_tema == 1) tema_escolhido = "Escultura";
+    else if (opcao_tema == 2) tema_escolhido = "Pintura";
+    else if (opcao_tema == 3) tema_escolhido = "Ourivesaria";
+    else if (opcao_tema == 4) tema_escolhido = "Arqueologia";
+    else if (opcao_tema == 5) tema_escolhido = "Artes Decorativas";
+    else tema_escolhido = "Todos";
 
-    printf("\n");
-    int qtd_sugeridas = gerarRoteiroPorTema(acervo, total_obras, tempo_visitante, tema_escolhido, indices_roteiro);
+    int qtd = gerarRoteiroPorTema(acervo, total_obras, tempo_visitante, tema_escolhido, indices_roteiro);
 
-    if (qtd_sugeridas > 0) {
-        int reajustar = 0;
-        printf("\nMenu do Roteiro - A meio da visita:\n");
-        printf("1 - Reajustar tempo restante ('Tenho X minutos')\n");
-        printf("0 - Continuar roteiro atual\n");
-        printf("Opcao: ");
-        scanf("%d", &reajustar);
+    if (qtd > 0) {
+        int sub_opcao = -1;
+        while (sub_opcao != 0) {
+            printf("\n1 - Marcar obra visitada e reajustar roteiro\n");
+            printf("2 - Simular perda de rede e abrir roteiro em cache [Modo Offline]\n");
+            printf("0 - Voltar ao menu principal\n");
+            printf("Opcao: ");
+            sub_opcao = lerOpcaoNumerica();
 
-        if (reajustar == 1) {
-            int ja_visitadas = 0;
-            int tempo_restante = 0;
-
-            printf("Quantas obras deste roteiro ja visitou? (0 a %d): ", qtd_sugeridas);
-            scanf("%d", &ja_visitadas);
-
-            if (ja_visitadas < 0) ja_visitadas = 0;
-            if (ja_visitadas > qtd_sugeridas) ja_visitadas = qtd_sugeridas;
-
-            for (int i = 0; i < ja_visitadas; i++) {
-                acervo[indices_roteiro[i]].visitada = 1;
-            }
-
-            printf("Tenho quantos minutos restantes? ");
-            scanf("%d", &tempo_restante);
-
-            int restantes = reajustarRoteiro(acervo, total_obras, tempo_restante, tema_escolhido);
-
-            if (restantes == 0) {
-                int acao_fim = 0;
-                printf("\nAcao disponivel:\n");
-                printf("1 - Terminar visita\n");
-                printf("Opcao: ");
-                scanf("%d", &acao_fim);
-                printf("\nVisita terminada. Obrigado por utilizar o MNSR Digital!\n");
+            if (sub_opcao == 1) {
+                printf("Numero da obra visitada (1 a %d): ", qtd);
+                int num_obra = lerOpcaoNumerica();
+                if (num_obra >= 1 && num_obra <= qtd) {
+                    acervo[indices_roteiro[num_obra - 1]].visitada = 1;
+                    printf("Obra '%s' marcada como visitada!\n", acervo[indices_roteiro[num_obra - 1]].nome);
+                }
+                printf("Tempo restante disponivel (minutos): ");
+                int tempo_restante = lerOpcaoNumerica();
+                reajustarRoteiro(acervo, total_obras, tempo_restante, tema_escolhido);
+            } else if (sub_opcao == 2) {
+                carregarRoteiroCache();
             }
         }
     }
