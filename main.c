@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "roteiros.c"
+#include "gamificacao.c"
 
-int main() {
-    // Acervo guardado em cache local (suporta modo offline - RNF-01)
+void menuRoteiros() {
     Obra acervo[] = {
         {1, "O Desterro (Soares dos Reis)", "Escultura", 5, 0},
         {2, "Retrato de Henrique Pousao (Columbano)", "Pintura", 5, 0},
@@ -24,7 +24,7 @@ int main() {
     int tempo_visitante = 0;
     const char *tema_escolhido = "Todos";
 
-    printf("=== MNSR Digital - Roteiros Inteligentes ===\n");
+    printf("\n=== MNSR Digital - Roteiros Inteligentes ===\n");
     printf("Selecione a duracao da sua visita:\n");
     printf("1 - 30 minutos (Essencial)\n");
     printf("2 - 60 minutos (Intermedio)\n");
@@ -103,6 +103,36 @@ int main() {
                 scanf("%d", &acao_fim);
                 printf("\nVisita terminada. Obrigado por utilizar o MNSR Digital!\n");
             }
+        }
+    }
+}
+
+int main() {
+    int menu_principal = -1;
+
+    while (menu_principal != 0) {
+        printf("\n========================================\n");
+        printf("       MNSR Digital - Menu Principal    \n");
+        printf("========================================\n");
+        printf("1 - Roteiros Inteligentes\n");
+        printf("2 - Caca ao Tesouro (QR Codes)\n");
+        printf("0 - Sair\n");
+        printf("Opcao: ");
+        menu_principal = lerOpcaoNumerica();
+
+        switch (menu_principal) {
+            case 1:
+                menuRoteiros();
+                break;
+            case 2:
+                iniciarCacaAoTesouro();
+                break;
+            case 0:
+                printf("\nAte breve no Museu Nacional Soares dos Reis!\n");
+                break;
+            default:
+                printf("\nOpcao invalida.\n");
+                break;
         }
     }
 
